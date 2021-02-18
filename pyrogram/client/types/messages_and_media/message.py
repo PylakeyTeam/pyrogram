@@ -468,7 +468,10 @@ class Message(Object, Update):
                 except MessageIdsEmpty:
                     pass
                 except Exception as e:
-                    logger.error(f"Unable to parse pinned_message {e}")
+                    logger.error(
+                        f"Unable to parse pinned_message for chat: {parsed_message.chat.id} "
+                        f"(@{parsed_message.chat.username}) {e}"
+                    )
 
             if isinstance(action, types.MessageActionGameScore):
                 parsed_message.game_high_score = pyrogram.GameHighScore._parse_action(client, message, users)
@@ -481,7 +484,10 @@ class Message(Object, Update):
                             replies=0
                         )
                     except Exception as e:
-                        logger.error(f"Unable to parse pinned_message in MessageActionGameScore {e}")
+                        logger.error(
+                            f"Unable to parse reply_to_message (MessageActionGameScore) for chat: {parsed_message.chat.id} "
+                            f"(@{parsed_message.chat.username}) {e}"
+                        )
 
             return parsed_message
 
@@ -675,7 +681,10 @@ class Message(Object, Update):
                 except MessageIdsEmpty:
                     pass
                 except Exception as e:
-                    logger.error(f"Unable to parse reply_to_message {e}")
+                    logger.error(
+                        f"Unable to parse reply_to_message for chat: {parsed_message.chat.id} "
+                        f"(@{parsed_message.chat.username}) {e}"
+                    )
 
             return parsed_message
 
