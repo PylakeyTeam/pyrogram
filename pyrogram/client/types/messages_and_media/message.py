@@ -465,6 +465,8 @@ class Message(Object, Update):
                     )
                 except MessageIdsEmpty:
                     pass
+                except:
+                    pass
 
             if isinstance(action, types.MessageActionGameScore):
                 parsed_message.game_high_score = pyrogram.GameHighScore._parse_action(client, message, users)
