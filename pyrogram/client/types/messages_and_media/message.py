@@ -16,6 +16,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
 from functools import partial
 from typing import List, Match, Union
 
@@ -34,6 +35,7 @@ from ..user_and_chats.user import User
 from ...ext import utils
 from ...parser import utils as parser_utils, Parser
 
+logger = logging.getLogger("pyrogram.Message")
 
 class Str(str):
     def __init__(self, *args):
@@ -465,8 +467,8 @@ class Message(Object, Update):
                     )
                 except MessageIdsEmpty:
                     pass
-                except:
-                    pass
+                except Exception as e:
+                    logger.error(f"Unable to parse pinned_message {e}")
 
             if isinstance(action, types.MessageActionGameScore):
                 parsed_message.game_high_score = pyrogram.GameHighScore._parse_action(client, message, users)
@@ -478,8 +480,8 @@ class Message(Object, Update):
                             reply_to_message_ids=message.id,
                             replies=0
                         )
-                    except MessageIdsEmpty:
-                        pass
+                    except Exception as e:
+                        logger.error(f"Unable to parse pinned_message in MessageActionGameScore {e}")
 
             return parsed_message
 
@@ -672,6 +674,8 @@ class Message(Object, Update):
                     )
                 except MessageIdsEmpty:
                     pass
+                except Exception as e:
+                    logger.error(f"Unable to parse reply_to_message {e}")
 
             return parsed_message
 
