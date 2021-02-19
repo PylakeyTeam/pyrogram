@@ -84,6 +84,9 @@ class GetDialogs(BaseClient):
         messages = {}
 
         for message in r.messages:
+            if isinstance(message, types.MessageEmpty):
+                continue
+
             to_id = message.to_id
 
             if isinstance(to_id, types.PeerUser):
