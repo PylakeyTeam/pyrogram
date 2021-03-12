@@ -1306,7 +1306,7 @@ class Client(Methods, BaseClient):
         while True:
             updates = await self.updates_queue.get()
 
-            if self.updates_queue.qsize() > 0 and self.updates_queue.qsize() % 25 == 0:
+            if self.updates_queue.qsize() > 0 and self.updates_queue.qsize() % 100 == 0:
                 additional_logger.info(f'### DEBUG ### {self.updates_queue.qsize()} updates in queue left ')
 
             if updates is None:
