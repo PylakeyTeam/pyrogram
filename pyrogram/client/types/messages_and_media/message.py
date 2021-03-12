@@ -439,7 +439,7 @@ class Message(Object, Update):
             elif isinstance(action, types.MessageActionChatEditPhoto):
                 new_chat_photo = Photo._parse(client, action.photo)
 
-            parsed_message = Message(
+            return Message(
                 message_id=message.id,
                 date=message.date,
                 chat=Chat._parse(client, message, users, chats),
@@ -457,39 +457,6 @@ class Message(Object, Update):
                 client=client
                 # TODO: supergroup_chat_created
             )
-
-            if isinstance(action, types.MessageActionPinMessage):
-                try:
-                    parsed_message.pinned_message = await client.get_messages(
-                        parsed_message.chat.id,
-                        reply_to_message_ids=message.id,
-                        replies=0
-                    )
-                except MessageIdsEmpty:
-                    pass
-                except Exception as e:
-                    logger.error(
-                        f"Unable to parse pinned_message for chat: {parsed_message.chat.id} "
-                        f"(@{parsed_message.chat.username}) {e}"
-                    )
-
-            if isinstance(action, types.MessageActionGameScore):
-                parsed_message.game_high_score = pyrogram.GameHighScore._parse_action(client, message, users)
-
-                if message.reply_to_msg_id and replies:
-                    try:
-                        parsed_message.reply_to_message = await client.get_messages(
-                            parsed_message.chat.id,
-                            reply_to_message_ids=message.id,
-                            replies=0
-                        )
-                    except Exception as e:
-                        logger.error(
-                            f"Unable to parse reply_to_message (MessageActionGameScore) for chat: {parsed_message.chat.id} "
-                            f"(@{parsed_message.chat.username}) {e}"
-                        )
-
-            return parsed_message
 
         if isinstance(message, types.Message):
             entities = [MessageEntity._parse(client, entity, users) for entity in message.entities]
