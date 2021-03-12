@@ -50,6 +50,7 @@ from .storage import Storage, FileStorage, MemoryStorage
 from .types import User, SentCode, TermsOfService
 
 log = logging.getLogger(__name__)
+additional_logger = logging.getLogger(f"{__name__}.additional")
 
 
 class Client(Methods, BaseClient):
@@ -1304,6 +1305,9 @@ class Client(Methods, BaseClient):
         while True:
             updates = await self.updates_queue.get()
 
+            if self.updates_queue.qsize() % 100 == 0:
+                additional_logger.info(f'### DEBUG ### {self.updates_queue.qsize()} updates in queue left ')
+
             if updates is None:
                 break
 
@@ -1380,6 +1384,9 @@ class Client(Methods, BaseClient):
                     self.dispatcher.updates_queue.put_nowait((updates.update, {}, {}))
                 elif isinstance(updates, types.UpdatesTooLong):
                     log.info(updates)
+                else:
+                    additional_logger.info(f'### DEBUG ### Unknown update of type {type(updates)}')
+
             except Exception as e:
                 log.error(e, exc_info=True)
 

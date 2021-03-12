@@ -18,9 +18,11 @@
 
 import asyncio
 import logging
+import sys
 import time
 
 log = logging.getLogger(__name__)
+additional_logger = logging.getLogger(f"{__name__}.additional")
 
 
 class Syncer:
@@ -42,6 +44,10 @@ class Syncer:
             cls.sync(client)
 
             cls.clients[id(client)] = client
+            additional_logger.info(
+                f"### DEBUG ### Count of clients is {len(cls.clients)}. "
+                f"Size of clients dict is {sys.getsizeof(cls.clients)}"
+            )
 
             if len(cls.clients) == 1:
                 cls.start()
@@ -52,6 +58,10 @@ class Syncer:
             cls.sync(client)
 
             del cls.clients[id(client)]
+            additional_logger.info(
+                f"### DEBUG ### Count of clients is {len(cls.clients)}. "
+                f"Size of clients dict is {sys.getsizeof(cls.clients)}"
+            )
 
             if len(cls.clients) == 0:
                 cls.stop()
