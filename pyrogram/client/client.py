@@ -1334,8 +1334,8 @@ class Client(Methods, BaseClient):
                 additional_logger.info(
                     f'### DEBUG ### {self.updates_queue.qsize()} updates in queue left. '
                     f'Already processed by this moment: {processed_updates}\n'
-                    f'Most popular types processed: {popular_types}'
                 )
+                additional_logger.info(f'Most popular types processed: {popular_types}')
 
             if updates is None:
                 break
