@@ -263,7 +263,10 @@ class Session:
                         msg_id = msg.body.req_msg_id
                     elif isinstance(msg.body, types.Pong):
                         msg_id = msg.body.msg_id
+                    elif isinstance(msg.body, types.MsgsAck):
+                        pass
                     else:
+
                         if self.client is not None:
                             self.client.updates_queue.put_nowait(msg.body)
 
