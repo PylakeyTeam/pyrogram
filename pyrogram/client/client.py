@@ -25,11 +25,11 @@ import re
 import shutil
 import tempfile
 from configparser import ConfigParser
-from hashlib import sha256, md5
+from hashlib import md5, sha256
 from importlib import import_module
 from pathlib import Path
-from signal import signal, SIGINT, SIGTERM, SIGABRT
-from typing import Union, List, BinaryIO
+from signal import SIGABRT, SIGINT, SIGTERM, signal
+from typing import BinaryIO, List, Union
 
 from pyrogram.api import functions, types
 from pyrogram.api.core import TLObject
@@ -38,16 +38,22 @@ from pyrogram.client.handlers.handler import Handler
 from pyrogram.client.methods.password.utils import compute_check
 from pyrogram.crypto import AES
 from pyrogram.errors import (
-    PhoneMigrate, NetworkMigrate, SessionPasswordNeeded,
-    PeerIdInvalid, VolumeLocNotFound, UserMigrate, ChannelPrivate,
-    AuthBytesInvalid, BadRequest
+    AuthBytesInvalid,
+    BadRequest,
+    ChannelPrivate,
+    NetworkMigrate,
+    PeerIdInvalid,
+    PhoneMigrate,
+    SessionPasswordNeeded,
+    UserMigrate,
+    VolumeLocNotFound,
 )
 from pyrogram.session import Auth, Session
-from .ext import utils, Syncer, BaseClient, Dispatcher
+from .ext import BaseClient, Dispatcher, Syncer, utils
 from .ext.utils import ainput
 from .methods import Methods
-from .storage import Storage, FileStorage, MemoryStorage
-from .types import User, SentCode, TermsOfService
+from .storage import FileStorage, MemoryStorage, Storage
+from .types import SentCode, TermsOfService, User
 
 log = logging.getLogger(__name__)
 additional_logger = logging.getLogger("KSDebug")
@@ -171,30 +177,30 @@ class Client(Methods, BaseClient):
     """
 
     def __init__(
-        self,
-        session_name: Union[str, Storage],
-        api_id: Union[int, str] = None,
-        api_hash: str = None,
-        app_version: str = None,
-        device_model: str = None,
-        system_version: str = None,
-        lang_code: str = None,
-        ipv6: bool = False,
-        proxy: dict = None,
-        test_mode: bool = False,
-        bot_token: str = None,
-        phone_number: str = None,
-        phone_code: str = None,
-        password: str = None,
-        force_sms: bool = False,
-        workers: int = BaseClient.WORKERS,
-        workdir: str = BaseClient.WORKDIR,
-        config_file: str = BaseClient.CONFIG_FILE,
-        plugins: dict = None,
-        parse_mode: str = BaseClient.PARSE_MODES[0],
-        no_updates: bool = None,
-        takeout: bool = None,
-        sleep_threshold: int = Session.SLEEP_THRESHOLD
+            self,
+            session_name: Union[str, Storage],
+            api_id: Union[int, str] = None,
+            api_hash: str = None,
+            app_version: str = None,
+            device_model: str = None,
+            system_version: str = None,
+            lang_code: str = None,
+            ipv6: bool = False,
+            proxy: dict = None,
+            test_mode: bool = False,
+            bot_token: str = None,
+            phone_number: str = None,
+            phone_code: str = None,
+            password: str = None,
+            force_sms: bool = False,
+            workers: int = BaseClient.WORKERS,
+            workdir: str = BaseClient.WORKDIR,
+            config_file: str = BaseClient.CONFIG_FILE,
+            plugins: dict = None,
+            parse_mode: str = BaseClient.PARSE_MODES[0],
+            no_updates: bool = None,
+            takeout: bool = None,
+            sleep_threshold: int = Session.SLEEP_THRESHOLD
     ):
         super().__init__()
 
@@ -1303,11 +1309,33 @@ class Client(Methods, BaseClient):
                 done.set()
 
     async def updates_worker(self):
+        processed_updates = 0
+        processed_updates_by_types = {}
+
         while True:
             updates = await self.updates_queue.get()
+            update_type = type(updates)
+
+            if processed_updates_by_types.get(update_type) is None:
+                processed_updates_by_types[update_type] = 0
+
+            processed_updates_by_types[update_type] += 1
+            processed_updates += 1
 
             if self.updates_queue.qsize() > 0 and self.updates_queue.qsize() % 100 == 0:
-                additional_logger.info(f'### DEBUG ### {self.updates_queue.qsize()} updates in queue left ')
+                popular_types = "\n".join(
+                    f"{t}: {v}"
+                    for t, v in sorted(
+                        processed_updates_by_types.items(),
+                        key=lambda item: item[1],
+                        reverse=True
+                    )
+                )
+                additional_logger.info(
+                    f'### DEBUG ### {self.updates_queue.qsize()} updates in queue left. '
+                    f'Already processed by this moment: {processed_updates}\n'
+                    f'Most popular types processed: {popular_types}'
+                )
 
             if updates is None:
                 break
@@ -1741,12 +1769,12 @@ class Client(Methods, BaseClient):
                 raise PeerIdInvalid
 
     async def save_file(
-        self,
-        path: Union[str, BinaryIO],
-        file_id: int = None,
-        file_part: int = 0,
-        progress: callable = None,
-        progress_args: tuple = ()
+            self,
+            path: Union[str, BinaryIO],
+            file_id: int = None,
+            file_part: int = 0,
+            progress: callable = None,
+            progress_args: tuple = ()
     ):
         """Upload a file onto Telegram servers, without actually sending the message to anyone.
         Useful whenever an InputFile type is required.
@@ -1912,22 +1940,22 @@ class Client(Methods, BaseClient):
                 await session.stop()
 
     async def get_file(
-        self,
-        media_type: int,
-        dc_id: int,
-        document_id: int,
-        access_hash: int,
-        thumb_size: str,
-        peer_id: int,
-        peer_type: str,
-        peer_access_hash: int,
-        volume_id: int,
-        local_id: int,
-        file_ref: str,
-        file_size: int,
-        is_big: bool,
-        progress: callable,
-        progress_args: tuple = ()
+            self,
+            media_type: int,
+            dc_id: int,
+            document_id: int,
+            access_hash: int,
+            thumb_size: str,
+            peer_id: int,
+            peer_type: str,
+            peer_access_hash: int,
+            volume_id: int,
+            local_id: int,
+            file_ref: str,
+            file_size: int,
+            is_big: bool,
+            progress: callable,
+            progress_args: tuple = ()
     ) -> str:
         async with self.media_sessions_lock:
             session = self.media_sessions.get(dc_id, None)
