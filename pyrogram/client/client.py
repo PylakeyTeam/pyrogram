@@ -50,7 +50,8 @@ from .storage import Storage, FileStorage, MemoryStorage
 from .types import User, SentCode, TermsOfService
 
 log = logging.getLogger(__name__)
-additional_logger = logging.getLogger(f"{__name__}.additional")
+additional_logger = logging.getLogger("KSDebug")
+additional_logger.setLevel(logging.INFO)
 
 
 class Client(Methods, BaseClient):

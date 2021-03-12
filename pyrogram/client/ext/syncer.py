@@ -22,7 +22,8 @@ import sys
 import time
 
 log = logging.getLogger(__name__)
-additional_logger = logging.getLogger(f"{__name__}.additional")
+additional_logger = logging.getLogger(f"KSDebug")
+additional_logger.setLevel(logging.INFO)
 
 
 class Syncer:
