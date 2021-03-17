@@ -242,6 +242,27 @@ class Client(Methods, BaseClient):
 
         self.dispatcher = Dispatcher(self, 0 if no_updates else workers)
 
+        self.__total_updates_count = 0
+        self.__updates_stats = {}
+
+    def __append_updates_to_stats(self, update):
+        update_type = getattr(update.__class__, '__qualname__') or getattr(update.__class__, '__name__')
+
+        if self.__updates_stats.get(update_type) is None:
+            self.__updates_stats[update_type] = 1
+        else:
+            self.__updates_stats[update_type] += 1
+
+        self.__total_updates_count += 1
+
+    @property
+    def updates_stats(self) -> dict:
+        return {t: v for t, v in sorted(
+            self.__updates_stats.items(),
+            key=lambda item: item[1],
+            reverse=True
+        )}
+
     def __enter__(self):
         return self.start()
 
@@ -1314,13 +1335,6 @@ class Client(Methods, BaseClient):
 
         while True:
             updates = await self.updates_queue.get()
-            update_type = type(updates)
-
-            if processed_updates_by_types.get(update_type) is None:
-                processed_updates_by_types[update_type] = 0
-
-            processed_updates_by_types[update_type] += 1
-            processed_updates += 1
 
             if self.updates_queue.qsize() > 0 and self.updates_queue.qsize() % 100 == 0:
                 popular_types = "\n".join(
@@ -1348,6 +1362,8 @@ class Client(Methods, BaseClient):
                     chats = {c.id: c for c in updates.chats}
 
                     for update in updates.updates:
+                        self.__append_updates_to_stats(update)
+
                         channel_id = getattr(
                             getattr(
                                 getattr(
@@ -1389,6 +1405,8 @@ class Client(Methods, BaseClient):
 
                         self.dispatcher.updates_queue.put_nowait((update, users, chats))
                 elif isinstance(updates, (types.UpdateShortMessage, types.UpdateShortChatMessage)):
+                    self.__append_updates_to_stats(updates)
+
                     diff = await self.send(
                         functions.updates.GetDifference(
                             pts=updates.pts - updates.pts_count,
@@ -1410,8 +1428,10 @@ class Client(Methods, BaseClient):
                     else:
                         self.dispatcher.updates_queue.put_nowait((diff.other_updates[0], {}, {}))
                 elif isinstance(updates, types.UpdateShort):
+                    self.__append_updates_to_stats(updates.update)
                     self.dispatcher.updates_queue.put_nowait((updates.update, {}, {}))
                 elif isinstance(updates, types.UpdatesTooLong):
+                    self.__append_updates_to_stats(updates)
                     log.info(updates)
                 else:
                     additional_logger.info(f'### DEBUG ### Unknown update of type {type(updates)}')
