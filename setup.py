@@ -129,7 +129,7 @@ if len(argv) > 1 and argv[1] in ["bdist_wheel", "install", "develop"]:
 
 setup(
     name="Pyrogram",
-    version="0.18.11-async",
+    version="0.18.12-async",
     description="Telegram MTProto API Client Library and Framework for Python",
     long_description=readme,
     long_description_content_type="text/markdown",
