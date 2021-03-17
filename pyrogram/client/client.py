@@ -200,7 +200,8 @@ class Client(Methods, BaseClient):
             parse_mode: str = BaseClient.PARSE_MODES[0],
             no_updates: bool = None,
             takeout: bool = None,
-            sleep_threshold: int = Session.SLEEP_THRESHOLD
+            sleep_threshold: int = Session.SLEEP_THRESHOLD,
+            ignore_channel_updates_except: List[int] = None
     ):
         super().__init__()
 
@@ -242,6 +243,7 @@ class Client(Methods, BaseClient):
 
         self.dispatcher = Dispatcher(self, 0 if no_updates else workers)
 
+        self.ignore_channel_updates_except = ignore_channel_updates_except
         self.__total_updates_processed = 0
         self.__total_updates_ignored = 0
         self.__updates_stats = {}
@@ -1387,14 +1389,10 @@ class Client(Methods, BaseClient):
                             message = update.message
                             channel_id = utils.get_channel_id(channel_id)
 
-                            # FWD and MSG
-                            if channel_id not in [
-                                -1001189406892,
-                                -1001207693062,
-                                -1001287390187,
-                                -1001337707012,
-                                -1001434460529,
-                            ]:
+                            if (
+                                    bool(self.ignore_channel_updates_except) and
+                                    channel_id not in self.ignore_channel_updates_except
+                            ):
                                 self.__total_updates_ignored += 1
                                 continue
 
