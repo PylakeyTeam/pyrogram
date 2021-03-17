@@ -242,7 +242,8 @@ class Client(Methods, BaseClient):
 
         self.dispatcher = Dispatcher(self, 0 if no_updates else workers)
 
-        self.__total_updates_count = 0
+        self.__total_updates_processed = 0
+        self.__total_updates_ignored = 0
         self.__updates_stats = {}
 
     def __append_updates_to_stats(self, update):
@@ -253,7 +254,7 @@ class Client(Methods, BaseClient):
         else:
             self.__updates_stats[update_type] += 1
 
-        self.__total_updates_count += 1
+        self.__total_updates_processed += 1
 
     @property
     def updates_stats(self) -> dict:
@@ -264,6 +265,8 @@ class Client(Methods, BaseClient):
         )}
 
         stats["UPDATES IN QUEUE"] = self.updates_queue.qsize()
+        stats["UPDATES PROCESSED"] = self.__total_updates_processed
+        stats["UPDATES IGNORED"] = self.__total_updates_ignored
 
         return stats
 
@@ -1392,6 +1395,7 @@ class Client(Methods, BaseClient):
                                 -1001337707012,
                                 -1001434460529,
                             ]:
+                                self.__total_updates_ignored += 1
                                 continue
 
                             if not isinstance(message, types.MessageEmpty):
