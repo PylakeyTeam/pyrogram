@@ -257,11 +257,15 @@ class Client(Methods, BaseClient):
 
     @property
     def updates_stats(self) -> dict:
-        return {t: v for t, v in sorted(
+        stats = {t: v for t, v in sorted(
             self.__updates_stats.items(),
             key=lambda item: item[1],
             reverse=True
         )}
+
+        stats["UPDATES IN QUEUE"] = self.updates_queue.qsize()
+
+        return stats
 
     def __enter__(self):
         return self.start()
