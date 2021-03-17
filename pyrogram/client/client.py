@@ -1362,8 +1362,6 @@ class Client(Methods, BaseClient):
                     chats = {c.id: c for c in updates.chats}
 
                     for update in updates.updates:
-                        self.__append_updates_to_stats(update)
-
                         channel_id = getattr(
                             getattr(
                                 getattr(
@@ -1380,6 +1378,17 @@ class Client(Methods, BaseClient):
 
                         if isinstance(update, types.UpdateNewChannelMessage) and is_min:
                             message = update.message
+                            channel_id = utils.get_channel_id(channel_id)
+
+                            # FWD and MSG
+                            if channel_id not in [
+                                -1001189406892,
+                                -1001207693062,
+                                -1001287390187,
+                                -1001337707012,
+                                -1001434460529,
+                            ]:
+                                continue
 
                             if not isinstance(message, types.MessageEmpty):
                                 try:
@@ -1403,6 +1412,7 @@ class Client(Methods, BaseClient):
                                         users.update({u.id: u for u in diff.users})
                                         chats.update({c.id: c for c in diff.chats})
 
+                        self.__append_updates_to_stats(update)
                         self.dispatcher.updates_queue.put_nowait((update, users, chats))
                 elif isinstance(updates, (types.UpdateShortMessage, types.UpdateShortChatMessage)):
                     self.__append_updates_to_stats(updates)
@@ -1430,7 +1440,7 @@ class Client(Methods, BaseClient):
                 elif isinstance(updates, types.UpdateShort):
                     self.__append_updates_to_stats(updates.update)
                     self.dispatcher.updates_queue.put_nowait((updates.update, {}, {}))
-                elif isinstance(updates, types.UpdatesTooLong):
+                elif isinstance(updates, (types.UpdatesTooLong, types.UpdateChannelTooLong)):
                     self.__append_updates_to_stats(updates)
                     log.info(updates)
                 else:
